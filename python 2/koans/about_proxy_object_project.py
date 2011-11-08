@@ -4,13 +4,13 @@
 # Project: Create a Proxy Class
 #
 # In this assignment, create a proxy class (one is started for you
-# below).  You should be able to initialize the proxy object with any
-# object.  Any attributes called on the proxy object should be forwarded
-# to the target object.  As each attribute call is sent, the proxy should
+# below). You should be able to initialize the proxy object with any
+# object. Any attributes called on the proxy object should be forwarded
+# to the target object. As each attribute call is sent, the proxy should
 # record the name of the attribute sent.
 #
-# The proxy class is started for you.  You will need to add a method
-# missing handler and any other supporting methods.  The specification
+# The proxy class is started for you. You will need to add a method
+# missing handler and any other supporting methods. The specification
 # of the Proxy class is given in the AboutProxyObjectProject koan.
 
 # Note: This is a bit trickier that it's Ruby Koans counterpart, but you
@@ -20,12 +20,39 @@ from runner.koan import *
 
 class Proxy(object):
     def __init__(self, target_object):
-        # WRITE CODE HERE
+        # Write your attribute initialisations here
+        self._messages = list()
         
-        #initialize '_obj' attribute last. Trust me on this!
+        #initialize attribute this last. Trust me!
         self._obj = target_object
 
-    # WRITE CODE HERE                                   
+    # WRITE CODE HERE
+    def __getattr__(self, name):
+        #print 'Debug GET ' + type(self).__name__ + "." + name + " dict=" + str(self.__dict__)
+    
+        attr = getattr(self._obj, name)
+        
+        self._messages.append(name)
+        return attr
+
+    def __setattr__(self, name, value):
+        #print 'Debug SET ' + type(self).__name__ + "." + name + "=" + str(value) + " __dict__=" + str(self.__dict__)
+       
+        if '_' == name[0]:
+            return object.__setattr__(self, name, value)
+                    
+        setattr(self._obj, name, value)
+        
+        self._messages.append(name + '=')
+                
+    def messages(self):
+        return self._messages
+    
+    def was_called(self, attr):
+        return self.number_of_times_called(attr) > 0
+            
+    def number_of_times_called(self, attr):
+        return len(filter(lambda msg: msg==attr , self._messages))
 
 # The proxy object should pass the following Koan:
 #
@@ -98,7 +125,7 @@ class AboutProxyObjectProject(Koan):
         self.assertEqual(['upper', 'split'], proxy.messages())
 
 # ====================================================================
-# The following code is to support the testing of the Proxy class.  No
+# The following code is to support the testing of the Proxy class. No
 # changes should be necessary to anything below this comment.
 
 # Example class using in the proxy testing above.
@@ -113,7 +140,7 @@ class Television(object):
 
     @channel.setter
     def channel(self, value):
-        self._channel = value        
+        self._channel = value
         
     def power(self):
         if self._power == 'on':
@@ -124,7 +151,7 @@ class Television(object):
     def is_on(self):
         return self._power == 'on'
 
-# Tests for the Television class.  All of theses tests should pass.
+# Tests for the Television class. All of theses tests should pass.
 class TelevisionTest(Koan):
     def test_it_turns_on(self):
         tv = Television()
@@ -158,3 +185,4 @@ class TelevisionTest(Koan):
     
         tv.channel = 11
         self.assertEqual(11, tv.channel)
+
